@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.Random;
  
 class Card {
     String suit = "";
@@ -175,6 +176,238 @@ class War extends GameHandler {
         return text;
     }
 }
+
+class GoFish extends GameHandler {
+    ArrayList<Card> player1Hand;
+    ArrayList<Card> player2Hand;
+    ArrayList<Card> deck;
+    int player1Books;
+    int player2Books;
+    Random rand;
+
+    GoFish() {
+        player1Hand = new ArrayList<>();
+        player2Hand = new ArrayList<>();
+        deck = new ArrayList<>();
+        player1Books = 0;
+        player2Books = 0;
+        rand = new Random();
+    }
+
+    @Override
+    void displayRules() {
+        System.out.println("Welcome to GO FISH!");
+        System.out.println("Win by collecting the most 'books' (4 cards of the same rank)!");
+        System.out.println("Ask your opponent for a card rank you have in your hand.");
+        System.out.println("If they have it, they must give you all cards of that rank.");
+        System.out.println("If not, you 'Go Fish' and draw from the deck!");
+    }
+
+    @Override
+    void setupDeck() {
+        Map<Integer, Integer> worthMap = new HashMap<>();
+        for (int i = 0; i < 13; i++) {
+            worthMap.put(i, i + 1);
+        }
+
+        deck = GameHandler.makeDeck(worthMap);
+        Collections.shuffle(deck);
+
+        for (int i = 0; i < 7; i++) {
+            player1Hand.add(deck.remove(0));
+            player2Hand.add(deck.remove(0));
+        }
+
+        checkAndRemoveBooks(player1Hand, 1);
+        checkAndRemoveBooks(player2Hand, 2);
+    }
+
+    @Override
+    int playGame() {
+        System.out.println("\n=== PLAYER 1'S TURN ===");
+        System.out.println("Your hand: " + formatHand(player1Hand));
+        System.out.println("Books - You: " + player1Books + " | Opponent: " + player2Books);
+        
+        if (player1Hand.isEmpty()) {
+            if (!deck.isEmpty()) {
+                player1Hand.add(deck.remove(0));
+                System.out.println("Your hand was empty. Drew a card.");
+            } else {
+                return checkWinner();
+            }
+        }
+
+        String askRank = getInput();
+        if (askRank.equalsIgnoreCase("stop")) {
+            System.out.println("Game Terminated!");
+            return checkWinner();
+        }
+
+        if (!hasRankInHand(player1Hand, askRank)) {
+            System.out.println("You don't have that rank in your hand! Try again.");
+            return -1;
+        }
+
+        ArrayList<Card> takenCards = takeCardsFromHand(player2Hand, askRank);
+        if (!takenCards.isEmpty()) {
+            System.out.println("Player 2 had " + takenCards.size() + " card(s)! You got: ");
+            for (Card c : takenCards) {
+                System.out.print(c.faceId + c.suit + " ");
+                player1Hand.add(c);
+            }
+            System.out.println();
+        } else {
+            System.out.println("Go Fish!");
+            if (!deck.isEmpty()) {
+                Card drawn = deck.remove(0);
+                player1Hand.add(drawn);
+                System.out.println("You drew: " + drawn.faceId + drawn.suit);
+            } else {
+                System.out.println("The deck is empty!");
+            }
+        }
+
+        checkAndRemoveBooks(player1Hand, 1);
+
+        if (isGameOver()) {
+            return checkWinner();
+        }
+
+        System.out.println("\n=== PLAYER 2'S TURN ===");
+        
+        if (player2Hand.isEmpty()) {
+            if (!deck.isEmpty()) {
+                player2Hand.add(deck.remove(0));
+                System.out.println("Player 2's hand was empty. They drew a card.");
+            } else {
+                return checkWinner();
+            }
+        }
+
+        String aiAskRank = getAIRankChoice();
+        System.out.println("Player 2 asks for: " + aiAskRank);
+
+        ArrayList<Card> aiTakenCards = takeCardsFromHand(player1Hand, aiAskRank);
+        if (!aiTakenCards.isEmpty()) {
+            System.out.println("You had " + aiTakenCards.size() + " card(s)! Player 2 took them.");
+            for (Card c : aiTakenCards) {
+                player2Hand.add(c);
+            }
+        } else {
+            System.out.println("You didn't have any. Player 2 goes fishing!");
+            if (!deck.isEmpty()) {
+                Card drawn = deck.remove(0);
+                player2Hand.add(drawn);
+                System.out.println("Player 2 drew a card.");
+            } else {
+                System.out.println("The deck is empty!");
+            }
+        }
+
+        checkAndRemoveBooks(player2Hand, 2);
+
+        if (isGameOver()) {
+            return checkWinner();
+        }
+
+        return -1;
+    }
+
+    @Override
+    String getInput() {
+        System.out.print("Ask for a rank (A, 2-10, J, Q, K) or type 'stop' to quit: ");
+        Scanner input = new Scanner(System.in);
+        String text = input.nextLine().trim().toUpperCase();
+        if (text.equals("1")) {
+            text = "A";
+        }
+        return text;
+    }
+
+    private String formatHand(ArrayList<Card> hand) {
+        StringBuilder sb = new StringBuilder();
+        for (Card c : hand) {
+            sb.append(c.faceId).append(c.suit).append(" ");
+        }
+        return sb.toString();
+    }
+
+    private boolean hasRankInHand(ArrayList<Card> hand, String rank) {
+        for (Card c : hand) {
+            if (c.faceId.equalsIgnoreCase(rank)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ArrayList<Card> takeCardsFromHand(ArrayList<Card> hand, String rank) {
+        ArrayList<Card> taken = new ArrayList<>();
+        for (int i = hand.size() - 1; i >= 0; i--) {
+            if (hand.get(i).faceId.equalsIgnoreCase(rank)) {
+                taken.add(hand.remove(i));
+            }
+        }
+        return taken;
+    }
+
+    private void checkAndRemoveBooks(ArrayList<Card> hand, int player) {
+        Map<String, Integer> rankCount = new HashMap<>();
+        
+        for (Card c : hand) {
+            rankCount.put(c.faceId, rankCount.getOrDefault(c.faceId, 0) + 1);
+        }
+
+        for (Map.Entry<String, Integer> entry : rankCount.entrySet()) {
+            if (entry.getValue() == 4) {
+                String rank = entry.getKey();
+                System.out.println("Player " + player + " completed a book of " + rank + "s!");
+                
+                for (int i = hand.size() - 1; i >= 0; i--) {
+                    if (hand.get(i).faceId.equals(rank)) {
+                        hand.remove(i);
+                    }
+                }
+
+                if (player == 1) {
+                    player1Books++;
+                } else {
+                    player2Books++;
+                }
+            }
+        }
+    }
+
+    private String getAIRankChoice() {
+        if (player2Hand.isEmpty()) {
+            return "A";
+        }
+        int randomIndex = rand.nextInt(player2Hand.size());
+        return player2Hand.get(randomIndex).faceId;
+    }
+
+    private boolean isGameOver() {
+        return deck.isEmpty() && (player1Hand.isEmpty() || player2Hand.isEmpty());
+    }
+
+    private int checkWinner() {
+        System.out.println("\n=== GAME OVER ===");
+        System.out.println("Final Score:");
+        System.out.println("Player 1: " + player1Books + " books");
+        System.out.println("Player 2: " + player2Books + " books");
+
+        if (player1Books > player2Books) {
+            System.out.println("Player 1 wins!");
+            return 1;
+        } else if (player2Books > player1Books) {
+            System.out.println("Player 2 wins!");
+            return 2;
+        } else {
+            System.out.println("It's a tie!");
+            return 0;
+        }
+    }
+}
  
 // class BlackJack extends GameHandler {
  
@@ -182,9 +415,6 @@ class War extends GameHandler {
  
 // class CrazyEights extends GameHandler {
  
-// }
- 
-// class GoFish extends GameHandler {
 // }
  
 public class Main {
@@ -216,10 +446,19 @@ public class Main {
                         break;
                     }
                 }
+            } else if (nextGame.equals("2")) {
+                GoFish game = new GoFish();
+                game.displayRules();
+                game.setupDeck();
+                while (true) {
+                    int results = game.playGame();
+                    if (results != -1) {
+                        break;
+                    }
+                }
             } else {
                 System.out.println("Input 1 through 4!");
             }
         }
     }
 }
- 
