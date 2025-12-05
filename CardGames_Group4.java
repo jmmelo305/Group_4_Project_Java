@@ -14,15 +14,15 @@ import java.util.HashMap;
 import java.util.Collections;
  
 class Card {
-    String suit = "";
-    String faceId = "";
-    int id = 0;
-    int value = 0;
+    String suit = ""; // The card's suit
+    String faceId = ""; // The card's face value
+    int id = 0; // The id of the card
+    int value = 0; // The card's actual value
     Card(String suit, int id, int value) {
         this.suit = suit;
         this.id = id;
         this.value = value;
-        switch (id) {
+        switch (id) { // Turns the id into the face value
             case 0:
                 this.faceId = "A";
                 break;
@@ -55,10 +55,10 @@ abstract class GameHandler {
     public static ArrayList<Card> makeDeck(Map<Integer, Integer> worthMap) {
         ArrayList<Card> deck = new ArrayList<>();
         for (int s = 0; s < 4; s++) {
-            String suit = (s == 0 ? "♥️" : (s == 1 ? "♠️" : (s == 2 ? "♦️" : "♣️")));
+            String suit = (s == 0 ? "♥️" : (s == 1 ? "♠️" : (s == 2 ? "♦️" : "♣️"))); // Turns an int to it's associated suit string
             for (int i = 0; i < 13; i++) {
-                Card newCard = new Card(suit, i, worthMap.get(i));
-                deck.add(newCard);
+                Card newCard = new Card(suit, i, worthMap.get(i)); // Generates a new card
+                deck.add(newCard); // Adds card to the deck
             }
         }
         return deck;
@@ -71,7 +71,7 @@ class War extends GameHandler {
     ArrayList<Card> player2Deck;
  
     @Override
-    void displayRules() {
+    void displayRules() { // Displays the instructions
         System.out.println("Welcome to WAR!");
         System.out.println("Win by stealling all of your opponents cards!");
         System.out.println("Steal by drawing a higher card than your opponent!");
@@ -82,7 +82,7 @@ class War extends GameHandler {
         // Establishes worthMap, id = worth
         Map<Integer, Integer> worthMap = new HashMap<>();
         for (int i = 0; i < 13; i++) {
-            worthMap.put(i, i+1);
+            worthMap.put(i, i+1); // War has each card value in accending order
         }
  
         // Makes and scrambles deck
@@ -99,22 +99,22 @@ class War extends GameHandler {
     int playGame() {
         ArrayList<Card> winPool = new ArrayList<>();
         int useIndex = 0;
-        while (true) {
+        while (true) { // Repeats until someone loses or someone draws a better card
             // If you run out of cards you lose
-            if (useIndex != 0) {
+            if (useIndex != 0) { // Three card war move
                 int p1Size = player1Deck.size();
                 int p2Size = player2Deck.size();
-                if (p1Size == p2Size && p1Size < 3) {
+                if (p1Size == p2Size && p1Size < 3) { // Not enough cards to continue
                     System.out.println("Stalemate! Game Over!");
                     return 0;
-                } else if (p1Size < 3) {
+                } else if (p1Size < 3) { // Player 1 ran out of cards
                     System.out.println("Player 2 won!");
                     return 2;
-                } else if (p2Size < 3) {
+                } else if (p2Size < 3) { // Player 2 ran out of cards
                     System.out.println("Player 1 won!");
                     return 1;
                 }
-            } else {
+            } else { // Normal move
                 if (player1Deck.size() == 0) {
                     System.out.println("Player 2 won!");
                     return 2;
@@ -124,17 +124,25 @@ class War extends GameHandler {
                 }
             }
  
+            // Gets first card
             Card player1Card = player1Deck.get(useIndex);
             Card player2Card = player2Deck.get(useIndex);
+
+            // Displays players total cards
             System.out.println("Player1 has "+player1Deck.size()+" card(s)");
             System.out.println("Player2 has "+player2Deck.size()+" card(s)");
+
+            // Display first drawn card
             System.out.println("Player1 drew "+ player1Card.faceId + player1Card.suit);
             System.out.println("Player2 drew "+ player2Card.faceId + player2Card.suit);
+            
+            // Move first card to win pool
             player1Deck.remove(useIndex);
             player2Deck.remove(useIndex);
             winPool.add(player1Card);
             winPool.add(player2Card);
  
+            // If 3 card move get and remove 2nd and 3rd card
             for (int i = useIndex - 1; i >= 0; i--) {
                 Card card1 = player1Deck.get(i);
                 Card card2 = player2Deck.get(i);
@@ -144,10 +152,11 @@ class War extends GameHandler {
                 winPool.add(card2);
             }
  
+            // Checks which player drew the highest card
             if (player1Card.value > player2Card.value) {
                 System.out.print("Player1 won the battle and won ");
                 Collections.shuffle(winPool);
-                for (Card c : winPool) {
+                for (Card c : winPool) { // Displays all won cards
                     System.out.print(c.faceId + c.suit + " , ");
                     player1Deck.add(c);
                 }
@@ -156,13 +165,13 @@ class War extends GameHandler {
             } else if (player1Card.value < player2Card.value) {
                 System.out.print("Player2 won the battle and won ");
                 Collections.shuffle(winPool);
-                for (Card c : winPool) {
+                for (Card c : winPool) { // Displays all won cards
                     System.out.print(c.faceId + c.suit + " , ");
                     player2Deck.add(c);
                 }
                 System.out.println("");
                 break;
-            } else {
+            } else { // Both players drew the same value card so a 3 card move is needed to break the tie
                 System.out.println("A draw! This means WAR!");
                 useIndex = 2;
             }
@@ -171,7 +180,7 @@ class War extends GameHandler {
     }
  
     @Override
-    String getInput() {
+    String getInput() { // Delays the display so it does not crash trying to load the entire game
         System.out.println("Continue ...");
         Scanner input = new Scanner(System.in);
         String text = input.nextLine();
@@ -581,7 +590,7 @@ public class Main {
             System.out.println("1 - War");
             System.out.println("2 - Go Fish");
             System.out.println("3 - Black Jack");
-            System.out.println("4 - Crazy Eights");
+            System.out.println("4 - Slap Jack");
             System.out.println("0 - Stop Session");
             Scanner input = new Scanner(System.in);
             String nextGame = input.nextLine();
@@ -593,11 +602,11 @@ public class Main {
                 game.setupDeck();
                 while (true) {
                     int results = game.playGame();
-                    if (results != -1) {
+                    if (results != -1) { // -1 continues the game. Anything else terminates the game
                         break;
                     }
                     String text = game.getInput();
-                    if (text.toLowerCase().equals("stop")) {
+                    if (text.toLowerCase().equals("stop")) { // Terminates the game early
                         System.out.println("Game Terminated!");
                         break;
                     }
