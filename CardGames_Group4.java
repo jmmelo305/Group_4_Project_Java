@@ -649,4 +649,95 @@ public class Main {
         }
     }
 }
+
+//Slapjack Game Class
+class Slapjack extends GameHandler {
+    ArrayList<Card> player1Deck;
+    ArrayList<Card> player2Deck;
  
+    @Override
+    void displayRules() {
+        System.out.println("Welcome to Slapjack");
+        System.out.println("Keep playing cards until you see a jack.")
+        System.out.println("When you see one, slap it so you can claim the whole deck.");
+        System.out.println("If you don't slap it, the computer will.")
+        System.out.println("The person who gets the whole deck wins!");
+    }
+
+    @Override
+    void setupDeck() {
+        // Establishes worthMap, id = worth
+        Map<Integer, Integer> worthMap = new HashMap<>();
+        for (int i = 0; i < 13; i++) {
+            worthMap.put(i, i+1);
+        }
+ 
+        // Makes and scrambles deck
+        ArrayList<Card> deck = GameHandler.makeDeck(worthMap);
+        Collections.shuffle(deck);
+ 
+        // Splits deck
+        int middleIndex = deck.size()/2;
+        player1Deck = new ArrayList<>(deck.subList(0, middleIndex));
+        player2Deck = new ArrayList<>(deck.subList(middleIndex, deck.size()));
+    } 
+
+    @Override
+    int playGame() {
+        ArrayList<Card> winPool = new ArrayList<>();
+        while (true) {
+            // If you run out of cards you lose
+            if (player1Deck.size() == 0) {
+                    System.out.println("Player 2 won!");
+                    return 2;
+                } else if (player2Deck.size() == 0) {
+                    System.out.println("Player 1 won!");
+                    return 1;
+                }
+
+            Card player1Card = player1Deck.get(0);
+            
+            Card player2Card = player2Deck.get(0);
+            System.out.println("Player1 has "+player1Deck.size()+" card(s)");
+            System.out.println("Player2 has "+player2Deck.size()+" card(s)");
+            System.out.println("Player1 drew "+ player1Card.faceId + player1Card.suit);
+            System.out.println("Player2 drew "+ player2Card.faceId + player2Card.suit);
+            player1Deck.remove(useIndex);
+            player2Deck.remove(useIndex);
+            winPool.add(player1Card);
+            winPool.add(player2Card);
+
+           if (player1Card.value > player2Card.value) {
+                System.out.print("Player1 won the battle and won ");
+                Collections.shuffle(winPool);
+                for (Card c : winPool) {
+                    System.out.print(c.faceId + c.suit + " , ");
+                    player1Deck.add(c);
+                }
+                System.out.println("");
+                break;
+            } else if (player1Card.value < player2Card.value) {
+                System.out.print("Player2 won the battle and won ");
+                Collections.shuffle(winPool);
+                for (Card c : winPool) {
+                    System.out.print(c.faceId + c.suit + " , ");
+                    player2Deck.add(c);
+                }
+                System.out.println("");
+                break;
+            } else {
+                System.out.println("A draw! This means WAR!");
+                useIndex = 2;
+            }
+        }
+        return -1;
+    }
+ 
+    @Override
+    String getInput() {
+        System.out.println("Continue ...");
+        Scanner input = new Scanner(System.in);
+        String text = input.nextLine();
+        return text;
+    } 
+}
