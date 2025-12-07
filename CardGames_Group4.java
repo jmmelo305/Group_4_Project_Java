@@ -6,13 +6,16 @@
  */
 
 
+//All Imports
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.HashMap;
 import java.util.Collections;
- 
+
+
+//Card Deck Creator Class
 class Card {
     String suit = ""; // The card's suit
     String faceId = ""; // The card's face value
@@ -421,17 +424,18 @@ class GoFish extends GameHandler {
     }
 }
 
-
 //BlackJack Class Game
 class BlackJack extends GameHandler {
+
+    //Initializes Variables used throughout the BlackJack Class
     ArrayList<Card> deck;
     ArrayList<Card> playerHand;
     ArrayList<Card> dealerHand;
-
     Scanner input = new Scanner (System.in);
     
     @Override
-
+    
+    //Method to print out the rules of Blacjack
     void displayRules(){
         System.out.println("===BLACKJACK===");
         System.out.println("Goal: Get closer to 21 than the dealer without going over. ");
@@ -443,6 +447,7 @@ class BlackJack extends GameHandler {
         System.out.println("-----------------------");
     }
 
+    //Method to setup deck specifically for BlackJack
     @Override
     void setupDeck(){
         // Card values: Ace = 1 or 11 (player decides), 2 - 10 = face value, J/Q/K = 10
@@ -457,6 +462,7 @@ class BlackJack extends GameHandler {
         Collections.shuffle(deck);
     }
 
+    //Method that runs the BlackJack Game
     @Override
     int playGame(){
         playerHand = new ArrayList<>();
@@ -473,15 +479,15 @@ class BlackJack extends GameHandler {
         System.out.println();
         System.out.println("Dealer shows: " + cardToString(dealerHand.get(0)));
 
-        // -------- PLAYER TURN ----------
+        // Player's Turn
         while (true) {
             System.out.println();
-            System.out.print("Hit or Stand? Stop to end game. ");
+            System.out.print("Hit or Stand? or Stop to end game. ");
             String choice = getInput().toLowerCase();
 
             if (choice.equals("stop")){
                 System.out.println("Game Terminated! ");
-                return 0;
+                return 0; //Game kill switch
             }
             if (choice.equals("hit")) {
                 playerHand.add(drawCard());
@@ -502,7 +508,7 @@ class BlackJack extends GameHandler {
             }
         }
 
-        // -------- DEALER TURN ----------
+        // Dealer's Turn
         System.out.println("Dealer's hand: " + handToString(dealerHand) +
                            " (Total: " + getTotal(dealerHand) + ")");
         System.out.println();
@@ -521,7 +527,7 @@ class BlackJack extends GameHandler {
                            " | Dealer: " + dealerTotal);
         System.out.println();
 
-        // -------- DETERMINE WINNER ----------
+        // Determines Winner
         if (dealerTotal > 21) {
             System.out.println("Dealer busts! You win!");
             return 1;
@@ -544,7 +550,7 @@ class BlackJack extends GameHandler {
         return input.nextLine();
     }
 
-    // -------- Helper Functions --------
+    //Helper Functions
 
     Card drawCard() {
         return deck.remove(0);
@@ -579,87 +585,7 @@ class BlackJack extends GameHandler {
     }
 }
 
-
-//Tester Class
-public class Main {
- 
-    public static void main(String[] args) {
-       
-        while (true) {
-            System.out.println("Select a game to play!");
-            System.out.println("1 - War");
-            System.out.println("2 - Go Fish");
-            System.out.println("3 - Black Jack");
-            System.out.println("4 - Slap Jack");
-            System.out.println("0 - Stop Session");
-            Scanner input = new Scanner(System.in);
-            String nextGame = input.nextLine();
- 
-            // Handles the game of War
-            if (nextGame.equals("1")) {
-                War game = new War();
-                game.displayRules();
-                game.setupDeck();
-                while (true) {
-                    int results = game.playGame();
-                    if (results != -1) { // -1 continues the game. Anything else terminates the game
-                        break;
-                    }
-                    String text = game.getInput();
-                    if (text.toLowerCase().equals("stop")) { // Terminates the game early
-                        System.out.println("Game Terminated!");
-                        break;
-                    }
-                }
-                
-            }
-            else if (nextGame.equals("2")){
-                GoFish game = new GoFish();
-                game.displayRules();
-                game.setupDeck();
-                while (true) {
-                    int results = game.playGame();
-                    if (results != -1) {
-                        break;
-                    }
-                }
-            }
-            
-            else if(nextGame.equals("3")){
-                BlackJack game = new BlackJack();
-                game.displayRules();
-                game.setupDeck();
-                while (true) {
-                    int results = game.playGame();
-                    if (results != -1) {
-                        break;
-                    }
-                    String text = game.getInput();
-                    if (text.toLowerCase().equals("stop")) {
-                        System.out.println("Game Terminated!");
-                        break;
-                    }
-                }
-            }
-            
-            //else if Game 4
-
-
-            else if (nextGame.equals("0")){
-                System.out.println();
-                System.out.println("Game Over");
-                System.out.println("Thanks for playing!" );
-                break;
-            }
-            
-            else {
-                System.out.println("Input 1 through 4!");
-            }
-        }
-    }
-}
-
-//Slapjack Game Class
+//SlapJack Class Game
 class Slapjack extends GameHandler {
     ArrayList<Card> player1Deck;
     ArrayList<Card> player2Deck;
@@ -667,9 +593,9 @@ class Slapjack extends GameHandler {
     @Override
     void displayRules() {
         System.out.println("Welcome to Slapjack");
-        System.out.println("Keep playing cards until you see a jack.")
+        System.out.println("Keep playing cards until you see a jack.");
         System.out.println("When you see one, slap it so you can claim the whole deck.");
-        System.out.println("If you don't slap it, the computer will.")
+        System.out.println("If you don't slap it, the computer will.");
         System.out.println("The person who gets the whole deck wins!");
     }
 
@@ -693,6 +619,7 @@ class Slapjack extends GameHandler {
 
     @Override
     int playGame() {
+        int useIndex = 0;
         ArrayList<Card> winPool = new ArrayList<>();
         while (true) {
             // If you run out of cards you lose
@@ -736,7 +663,7 @@ class Slapjack extends GameHandler {
                 break;
             } else {
                 System.out.println("A draw! This means WAR!");
-                useIndex = 2;
+                
             }
         }
         return -1;
@@ -750,3 +677,103 @@ class Slapjack extends GameHandler {
         return text;
     } 
 }
+
+//Tester Class
+public class Main {
+ 
+    public static void main(String[] args) {
+       
+        while (true) {
+            System.out.println("Select a game to play!");
+            System.out.println("1 - War");
+            System.out.println("2 - Go Fish");
+            System.out.println("3 - Black Jack");
+            System.out.println("4 - Slap Jack");
+            System.out.println("0 - Stop Session");
+            Scanner input = new Scanner(System.in);
+            String nextGame = input.nextLine();
+ 
+            // Handles the game of War
+            if (nextGame.equals("1")) {
+                War game = new War();
+                game.displayRules();
+                game.setupDeck();
+                while (true) {
+                    int results = game.playGame();
+                    if (results != -1) { // -1 continues the game. Anything else terminates the game
+                        break;
+                    }
+                    String text = game.getInput();
+                    if (text.toLowerCase().equals("stop")) { // Terminates the game early
+                        System.out.println("Game Terminated!");
+                        break;
+                    }
+                }
+                
+            }
+            // Handles the game of GoFish
+            else if (nextGame.equals("2")){
+                GoFish game = new GoFish();
+                game.displayRules();
+                game.setupDeck();
+                while (true) {
+                    int results = game.playGame();
+                    if (results != -1) {
+                        break;
+                    }
+                }
+            }
+            
+            // Handles the game of BlackJack
+            else if(nextGame.equals("3")){
+                BlackJack game = new BlackJack();
+                game.displayRules();
+                game.setupDeck();
+                while (true) {
+                    int results = game.playGame();
+                    if (results != -1) {
+                        break;
+                    }
+                    String text = game.getInput();
+                    if (text.toLowerCase().equals("stop")) {
+                        System.out.println("Game Terminated!");
+                        break;
+                    }
+                }
+            }
+
+            // Handles the game of SlapJack
+            else if (nextGame.equals("4")){
+                Slapjack game = new Slapjack();
+                game.displayRules();
+                game.setupDeck();
+                while (true){
+                    int results = game.playGame();
+                    if (results != -1){
+                        break;
+                    }
+                    String text = game.getInput();
+                    if (text.toLowerCase().equals("stop")){
+                        System.out.println("Game Terminated");
+                        break;
+                    }
+                }
+            }
+
+            // Kill Switch for the entire program
+            else if (nextGame.equals("0")){
+                System.out.println();
+                System.out.println("Game Over");
+                System.out.println("Thanks for playing!" );
+                break;
+            }
+            
+            // Error handling for any number other than 0 - 4
+            else {
+                System.out.println("Input 1 through 4!");
+            }
+        }
+    }
+}
+
+
