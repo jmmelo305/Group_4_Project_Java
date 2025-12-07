@@ -586,97 +586,163 @@ class BlackJack extends GameHandler {
 }
 
 //SlapJack Class Game
-class Slapjack extends GameHandler {
-    ArrayList<Card> player1Deck;
-    ArrayList<Card> player2Deck;
- 
+
+class Slapjack extends GameHandler { 
     @Override
     void displayRules() {
         System.out.println("Welcome to Slapjack");
         System.out.println("Keep playing cards until you see a jack.");
         System.out.println("When you see one, slap it so you can claim the whole deck.");
         System.out.println("If you don't slap it, the computer will.");
+        System.out.println("If you slap by accident, the computer gets the deck.");
         System.out.println("The person who gets the whole deck wins!");
     }
 
+    ArrayList<Card> playerDeck;
+    ArrayList<Card> computerDeck;
+
     @Override
     void setupDeck() {
-        // Establishes worthMap, id = worth
-        Map<Integer, Integer> worthMap = new HashMap<>();
-        for (int i = 0; i < 13; i++) {
-            worthMap.put(i, i+1);
-        }
- 
+        // Card values: Ace = 1 or 11 (player decides), 2 - 10 = face value, J/Q/K = 10
+        Map <Integer, Integer> worthMap = new HashMap<>();
+        worthMap.put(0,11);
+        for (int i = 1; i <= 9; i++) worthMap.put(i, i + 1);
+        worthMap.put(10,10);
+        worthMap.put(11,10);
+        worthMap.put(12,10);
+        
         // Makes and scrambles deck
         ArrayList<Card> deck = GameHandler.makeDeck(worthMap);
         Collections.shuffle(deck);
  
         // Splits deck
         int middleIndex = deck.size()/2;
-        player1Deck = new ArrayList<>(deck.subList(0, middleIndex));
-        player2Deck = new ArrayList<>(deck.subList(middleIndex, deck.size()));
+        playerDeck = new ArrayList<>(deck.subList(0, middleIndex));
+        computerDeck = new ArrayList<>(deck.subList(middleIndex, deck.size()));
     } 
 
     @Override
     int playGame() {
-        int useIndex = 0;
         ArrayList<Card> winPool = new ArrayList<>();
+        Card turnCard;
+
         while (true) {
             // If you run out of cards you lose
-            if (player1Deck.size() == 0) {
-                    System.out.println("Player 2 won!");
-                    return 2;
-                } else if (player2Deck.size() == 0) {
-                    System.out.println("Player 1 won!");
-                    return 1;
+            if (playerDeck.size() == 0) {
+                System.out.println("The computer won!");
+                return 2;
+            } else if (computerDeck.size() == 0) {
+                System.out.println("You won!");
+                return 1;
+            }
+
+            turnCard = playerDeck.get(0);
+            System.out.println("You have "+playerDeck.size()+" card(s)");
+            System.out.println("The computer has "+computerDeck.size()+" card(s)");
+            System.out.println("You played "+ turnCard.faceId + turnCard.suit);
+            playerDeck.remove(0);
+            winPool.add(turnCard);
+
+            System.out.println();
+            System.out.print("Would you like to slap or pass? (type Stop to end game.) ");
+            String choice = getInput().toLowerCase();
+
+            while (true){
+                if (choice.equals("stop")){
+                    System.out.println("Game Terminated! ");
+                    return 0; //Game kill switch
                 }
+                if (choice.equals("slap")) {
+                    if (turnCard.faceId.equals("J")) {
+                        System.out.println("Correct! A jack was played.");
+                        Collections.shuffle(winPool);
+                        for (Card c : winPool) {
+                            playerDeck.add(c);
+                        }
+                        winPool.clear();
+                        break;
+                    } else{
+                        System.out.println("Sorry, a jack wasn't played. The computer takes the pool.");
+                        Collections.shuffle(winPool);
+                        for (Card c : winPool) {
+                            computerDeck.add(c);
+                        }
+                        winPool.clear();
+                        break;
+                    }
 
-            Card player1Card = player1Deck.get(0);
-            
-            Card player2Card = player2Deck.get(0);
-            System.out.println("Player1 has "+player1Deck.size()+" card(s)");
-            System.out.println("Player2 has "+player2Deck.size()+" card(s)");
-            System.out.println("Player1 drew "+ player1Card.faceId + player1Card.suit);
-            System.out.println("Player2 drew "+ player2Card.faceId + player2Card.suit);
-            player1Deck.remove(useIndex);
-            player2Deck.remove(useIndex);
-            winPool.add(player1Card);
-            winPool.add(player2Card);
+                } else if (choice.equals("pass")) {
+                    if (turnCard.faceId.equals("J")) {
+                        System.out.println("Sorry, a jack was played. The computer takes the pool.");
+                        Collections.shuffle(winPool);
+                        for (Card c : winPool) {
+                            computerDeck.add(c);
+                        }
+                        winPool.clear();
+                        break;
+                    } else{
+                        System.out.println("Correct! A jack wasn't played.");
+                        break;
+                    }
+                } else {
+                    System.out.println("Type 'slap' or 'pass' or 'stop' to end game.");
+                    choice = getInput().toLowerCase();
+                    
+                }
+            }
+                        
+            turnCard = computerDeck.get(0);
+            System.out.println("You have "+playerDeck.size()+" card(s)");
+            System.out.println("The computer has "+computerDeck.size()+" card(s)");
+            System.out.println("The computer played "+ turnCard.faceId + turnCard.suit);
+            computerDeck.remove(0);
+            winPool.add(turnCard);
 
-           if (player1Card.value > player2Card.value) {
-                System.out.print("Player1 won the battle and won ");
+            System.out.println();
+
+            if (turnCard.faceId.equals("J")) {
+                System.out.println("A jack was played and the computer slapped it.");
                 Collections.shuffle(winPool);
                 for (Card c : winPool) {
-                    System.out.print(c.faceId + c.suit + " , ");
-                    player1Deck.add(c);
+                    computerDeck.add(c);
                 }
-                System.out.println("");
-                break;
-            } else if (player1Card.value < player2Card.value) {
-                System.out.print("Player2 won the battle and won ");
-                Collections.shuffle(winPool);
-                for (Card c : winPool) {
-                    System.out.print(c.faceId + c.suit + " , ");
-                    player2Deck.add(c);
-                }
-                System.out.println("");
-                break;
-            } else {
-                System.out.println("A draw! This means WAR!");
-                
+                winPool.clear();
+            } else{
+                System.out.print("Would you like to slap or pass? (type Stop to end game.) ");
+                choice = getInput().toLowerCase();
+                while(true){
+                    if (choice.equals("stop")){
+                        System.out.println("Game Terminated! ");
+                        return 0; //Game kill switch
+                    }
+                    else if (choice.equals("slap")) {
+                        System.out.println("Sorry, a jack wasn't played. The computer takes the pool.");
+                        Collections.shuffle(winPool);
+                        for (Card c : winPool) {
+                            computerDeck.add(c);
+                        }
+                        winPool.clear();
+                        break;
+                    } else if (choice.equals("pass")) {
+                        System.out.println("Correct! A jack wasn't played.");
+                        break;
+                    } else{
+                        System.out.println("Type 'slap' or 'pass' or 'stop' to end game.");
+                        choice = getInput().toLowerCase();
+                    }
+                }               
             }
         }
-        return -1;
     }
  
     @Override
     String getInput() {
         System.out.println("Continue ...");
         Scanner input = new Scanner(System.in);
-        String text = input.nextLine();
-        return text;
+        return input.nextLine();
     } 
-}
+} 
+
 
 //Tester Class
 public class Main {
@@ -746,6 +812,7 @@ public class Main {
             else if (nextGame.equals("4")){
                 Slapjack game = new Slapjack();
                 game.displayRules();
+                System.out.println("");
                 game.setupDeck();
                 while (true){
                     int results = game.playGame();
@@ -759,7 +826,7 @@ public class Main {
                     }
                 }
             }
-
+            
             // Kill Switch for the entire program
             else if (nextGame.equals("0")){
                 System.out.println();
@@ -775,5 +842,3 @@ public class Main {
         }
     }
 }
-
-
