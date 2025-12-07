@@ -21,6 +21,8 @@ class Card {
     String faceId = ""; // The card's face value
     int id = 0; // The id of the card
     int value = 0; // The card's actual value
+    
+    // Card Object constructor
     Card(String suit, int id, int value) {
         this.suit = suit;
         this.id = id;
@@ -589,6 +591,7 @@ class BlackJack extends GameHandler {
 
 class Slapjack extends GameHandler { 
     @Override
+    // Method to display slapjack rules implemented
     void displayRules() {
         System.out.println("Welcome to Slapjack");
         System.out.println("Keep playing cards until you see a jack.");
@@ -598,10 +601,11 @@ class Slapjack extends GameHandler {
         System.out.println("The person who gets the whole deck wins!");
     }
 
-    ArrayList<Card> playerDeck;
-    ArrayList<Card> computerDeck;
+    ArrayList<Card> playerDeck; // Declares player's hand
+    ArrayList<Card> computerDeck; // Declares computer's hand
 
     @Override
+    // Method to setup the deck implemented
     void setupDeck() {
         // Card values: Ace = 1 or 11 (player decides), 2 - 10 = face value, J/Q/K = 10
         Map <Integer, Integer> worthMap = new HashMap<>();
@@ -611,23 +615,25 @@ class Slapjack extends GameHandler {
         worthMap.put(11,10);
         worthMap.put(12,10);
         
-        // Makes and scrambles deck
+        // Makes and shuffles deck
         ArrayList<Card> deck = GameHandler.makeDeck(worthMap);
         Collections.shuffle(deck);
  
-        // Splits deck
+        // Splits deck evenly between two players
         int middleIndex = deck.size()/2;
         playerDeck = new ArrayList<>(deck.subList(0, middleIndex));
         computerDeck = new ArrayList<>(deck.subList(middleIndex, deck.size()));
     } 
 
     @Override
+    // Method to play game implemented
     int playGame() {
-        ArrayList<Card> winPool = new ArrayList<>();
-        Card turnCard;
+        ArrayList<Card> winPool = new ArrayList<>(); // The pool of cards claimed by a player when a jack is slapped
+        Card turnCard; // The card at the top of the pool
 
+        // Loops through player-computer turns until someone has won
         while (true) {
-            // If you run out of cards you lose
+            // Sets up logic of a player losing if they're out of cards
             if (playerDeck.size() == 0) {
                 System.out.println("The computer won!");
                 return 2;
@@ -636,22 +642,27 @@ class Slapjack extends GameHandler {
                 return 1;
             }
 
-            turnCard = playerDeck.get(0);
+            // Start of player turn
+            turnCard = playerDeck.get(0); // Card played
             System.out.println("You have "+playerDeck.size()+" card(s)");
             System.out.println("The computer has "+computerDeck.size()+" card(s)");
             System.out.println("You played "+ turnCard.faceId + turnCard.suit);
-            playerDeck.remove(0);
+            playerDeck.remove(0); // Removed from player hand
             winPool.add(turnCard);
 
             System.out.println();
+
+            // Offers choice of slapping card
             System.out.print("Would you like to slap or pass? (type Stop to end game.) ");
             String choice = getInput().toLowerCase();
 
+            // Loops as error handling
             while (true){
                 if (choice.equals("stop")){
                     System.out.println("Game Terminated! ");
                     return 0; //Game kill switch
                 }
+                // Logic of a slapjack turn (who claims winPool)
                 if (choice.equals("slap")) {
                     if (turnCard.faceId.equals("J")) {
                         System.out.println("Correct! A jack was played.");
@@ -690,16 +701,18 @@ class Slapjack extends GameHandler {
                     
                 }
             }
-                        
-            turnCard = computerDeck.get(0);
+            
+            // Start of computer turn
+            turnCard = computerDeck.get(0); // Card played
             System.out.println("You have "+playerDeck.size()+" card(s)");
             System.out.println("The computer has "+computerDeck.size()+" card(s)");
             System.out.println("The computer played "+ turnCard.faceId + turnCard.suit);
-            computerDeck.remove(0);
+            computerDeck.remove(0); // Removed from computer hand
             winPool.add(turnCard);
 
             System.out.println();
 
+            // Computer gets first dibs if it plays the jack
             if (turnCard.faceId.equals("J")) {
                 System.out.println("A jack was played and the computer slapped it.");
                 Collections.shuffle(winPool);
@@ -708,8 +721,10 @@ class Slapjack extends GameHandler {
                 }
                 winPool.clear();
             } else{
+                // Player may make a mistake, so is asked for input anyway
                 System.out.print("Would you like to slap or pass? (type Stop to end game.) ");
                 choice = getInput().toLowerCase();
+                // Loops as error handling
                 while(true){
                     if (choice.equals("stop")){
                         System.out.println("Game Terminated! ");
@@ -736,6 +751,7 @@ class Slapjack extends GameHandler {
     }
  
     @Override
+    // Implements getInput method
     String getInput() {
         System.out.println("Continue ...");
         Scanner input = new Scanner(System.in);
@@ -750,6 +766,7 @@ public class Main {
     public static void main(String[] args) {
        
         while (true) {
+            // Main menu for game
             System.out.println("Select a game to play!");
             System.out.println("1 - War");
             System.out.println("2 - Go Fish");
