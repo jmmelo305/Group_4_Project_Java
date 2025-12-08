@@ -1,8 +1,8 @@
 /*
  * Name: Card Games Simulator
- * Purpose: Create a program that simulates multiple card games including War, Go Fish, Blackjack, and Crazy Eights.
+ * Purpose: Create a program that simulates multiple card games including War, Go Fish, Blackjack, and Slapjackk.
  * Programmers: Christopher Markham, Biruk Yidnekachew, Elizabeth Taiwo, Jose Melo
- * Date: 12 / 1 / 2025 to 12 / ....
+ * Date: 12 / 1 / 2025 to 12 / 7 / 2025
  */
 
 
