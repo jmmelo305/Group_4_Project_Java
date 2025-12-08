@@ -201,7 +201,7 @@ class GoFish extends GameHandler {
     int player1Books;
     int player2Books;
     Random rand;
-
+    // Constructor to initialize all variables
     GoFish() {
         player1Hand = new ArrayList<>();
         player2Hand = new ArrayList<>();
@@ -210,7 +210,7 @@ class GoFish extends GameHandler {
         player2Books = 0;
         rand = new Random();
     }
-
+    // Displays the rules for Go Fish
     @Override
     void displayRules() {
         System.out.println("Welcome to GO FISH!");
@@ -219,32 +219,32 @@ class GoFish extends GameHandler {
         System.out.println("If they have it, they must give you all cards of that rank.");
         System.out.println("If not, you 'Go Fish' and draw from the deck!");
     }
-
+      // Sets up and deals the deck
     @Override
     void setupDeck() {
         Map<Integer, Integer> worthMap = new HashMap<>();
         for (int i = 0; i < 13; i++) {
             worthMap.put(i, i + 1);
         }
-
+   // Makes and shuffles the deck
         deck = GameHandler.makeDeck(worthMap);
         Collections.shuffle(deck);
-
+    // Deals 7 cards to each player
         for (int i = 0; i < 7; i++) {
             player1Hand.add(deck.remove(0));
             player2Hand.add(deck.remove(0));
         }
-
+  // Checks for any initial books
         checkAndRemoveBooks(player1Hand, 1);
         checkAndRemoveBooks(player2Hand, 2);
     }
-
+// Main game loop for one round
     @Override
     int playGame() {
         System.out.println("\n=== PLAYER 1'S TURN ===");
         System.out.println("Your hand: " + formatHand(player1Hand));
         System.out.println("Books - You: " + player1Books + " | Opponent: " + player2Books);
-        
+        // If hand is empty, draw a card
         if (player1Hand.isEmpty()) {
             if (!deck.isEmpty()) {
                 player1Hand.add(deck.remove(0));
@@ -253,18 +253,18 @@ class GoFish extends GameHandler {
                 return checkWinner();
             }
         }
-
+  // Gets the rank player wants to ask for
         String askRank = getInput();
         if (askRank.equalsIgnoreCase("stop")) {
             System.out.println("Game Terminated!");
             return checkWinner();
         }
-
+   // Validates player has the rank they're asking for
         if (!hasRankInHand(player1Hand, askRank)) {
             System.out.println("You don't have that rank in your hand! Try again.");
             return -1;
         }
-
+ // Attempts to take cards from opponent
         ArrayList<Card> takenCards = takeCardsFromHand(player2Hand, askRank);
         if (!takenCards.isEmpty()) {
             System.out.println("Player 2 had " + takenCards.size() + " card(s)! You got: ");
@@ -283,15 +283,15 @@ class GoFish extends GameHandler {
                 System.out.println("The deck is empty!");
             }
         }
-
+  // Checks for completed books
         checkAndRemoveBooks(player1Hand, 1);
-
+// Checks if game is over
         if (isGameOver()) {
             return checkWinner();
         }
-
+// 2nd Players (ai) turn
         System.out.println("\n=== PLAYER 2'S TURN ===");
-        
+     // If AI hand is empty, draw a card
         if (player2Hand.isEmpty()) {
             if (!deck.isEmpty()) {
                 player2Hand.add(deck.remove(0));
@@ -303,7 +303,7 @@ class GoFish extends GameHandler {
 
         String aiAskRank = getAIRankChoice();
         System.out.println("Player 2 asks for: " + aiAskRank);
-
+ // AI selects a rank to ask for
         ArrayList<Card> aiTakenCards = takeCardsFromHand(player1Hand, aiAskRank);
         if (!aiTakenCards.isEmpty()) {
             System.out.println("You had " + aiTakenCards.size() + " card(s)! Player 2 took them.");
@@ -320,16 +320,16 @@ class GoFish extends GameHandler {
                 System.out.println("The deck is empty!");
             }
         }
-
+// AI attempts to take cards from player
         checkAndRemoveBooks(player2Hand, 2);
 
         if (isGameOver()) {
             return checkWinner();
         }
-
+// Returns -1 to continue the game
         return -1;
     }
-
+// Gets user input for rank selection
     @Override
     String getInput() {
         System.out.print("Ask for a rank (A, 2-10, J, Q, K) or type 'stop' to quit: ");
@@ -340,7 +340,7 @@ class GoFish extends GameHandler {
         }
         return text;
     }
-
+  // Formats hand into a readable string
     private String formatHand(ArrayList<Card> hand) {
         StringBuilder sb = new StringBuilder();
         for (Card c : hand) {
@@ -348,7 +348,7 @@ class GoFish extends GameHandler {
         }
         return sb.toString();
     }
-
+ // Checks if a specific rank exists in hand
     private boolean hasRankInHand(ArrayList<Card> hand, String rank) {
         for (Card c : hand) {
             if (c.faceId.equalsIgnoreCase(rank)) {
@@ -357,7 +357,7 @@ class GoFish extends GameHandler {
         }
         return false;
     }
-
+ // Takes all cards of a specific rank from hand
     private ArrayList<Card> takeCardsFromHand(ArrayList<Card> hand, String rank) {
         ArrayList<Card> taken = new ArrayList<>();
         for (int i = hand.size() - 1; i >= 0; i--) {
@@ -367,25 +367,25 @@ class GoFish extends GameHandler {
         }
         return taken;
     }
-
+ // Checks for and removes completed books (4 of a kind)
     private void checkAndRemoveBooks(ArrayList<Card> hand, int player) {
         Map<String, Integer> rankCount = new HashMap<>();
-        
+          // Counts how many of each rank are in hand
         for (Card c : hand) {
             rankCount.put(c.faceId, rankCount.getOrDefault(c.faceId, 0) + 1);
         }
-
+// Checks each rank for a book (4 cards)
         for (Map.Entry<String, Integer> entry : rankCount.entrySet()) {
             if (entry.getValue() == 4) {
                 String rank = entry.getKey();
                 System.out.println("Player " + player + " completed a book of " + rank + "s!");
-                
+                 // Removes all 4 cards of that rank from hand
                 for (int i = hand.size() - 1; i >= 0; i--) {
                     if (hand.get(i).faceId.equals(rank)) {
                         hand.remove(i);
                     }
                 }
-
+// Increments the player's book count
                 if (player == 1) {
                     player1Books++;
                 } else {
@@ -394,7 +394,7 @@ class GoFish extends GameHandler {
             }
         }
     }
-
+// AI picks a random rank from its hand
     private String getAIRankChoice() {
         if (player2Hand.isEmpty()) {
             return "A";
@@ -402,11 +402,11 @@ class GoFish extends GameHandler {
         int randomIndex = rand.nextInt(player2Hand.size());
         return player2Hand.get(randomIndex).faceId;
     }
-
+// Checks if the game is over
     private boolean isGameOver() {
         return deck.isEmpty() && (player1Hand.isEmpty() || player2Hand.isEmpty());
     }
-
+// Determines and displays the winner
     private int checkWinner() {
         System.out.println("\n=== GAME OVER ===");
         System.out.println("Final Score:");
